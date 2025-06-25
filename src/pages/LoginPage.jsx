@@ -2,6 +2,8 @@ import { useState } from "react"
 import styles from "./pages.module.css"
 import { useNavigate } from "react-router-dom"
 
+// I must modularize my code more, I will create a form component
+
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
