@@ -8,7 +8,7 @@ export default function LoginPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(true)
     const [loading, setLoading] = useState(false)
 
-    const navigate = useNavigate("/home")
+    const navigate = useNavigate()
 
 
     function handleEmailChange(e) {
