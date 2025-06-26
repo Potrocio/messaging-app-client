@@ -1,5 +1,5 @@
 import styles from "./pages.module.css"
-import MainMenu from "../components/mainMenu/MainMenu"
+import MainMenu from "../components/menus/mainMenu/MainMenu"
 
 export default function LandingPage() {
     return (

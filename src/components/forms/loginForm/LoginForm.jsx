@@ -32,8 +32,8 @@ export default function LoginForm() {
     }
 
     return (
-        <div className={styles.loginPageWrapper}>
-            <h2 className={styles.loginTitle}>Account</h2>
+        <div className={styles.loginFormWrapper}>
+            <h2 className={styles.loginTitle}>Account login</h2>
             <form onSubmit={handleFormSubmit}>
                 <div className={styles.emailWrapper}>
                     <label htmlFor="email">Email</label>
