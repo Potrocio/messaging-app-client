@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { createContext, useState } from "react"
 import styles from "./pages.module.css"
 import HomeTabSelector from "../components/homeTabSelector/HomeTabSelector"
 import SelectedTabData from "../components/selectedTabData/SelectedTabData"
@@ -16,7 +16,7 @@ export default function HomePage() {
     return (
         <div className={styles.homepageWrapper}>
             <button className={styles.settings} onClick={navigateToSettings}>Settings</button>
-            <HomeTabSelector setTabSelected={setTabSelected} />
+            <HomeTabSelector tabSelected={tabSelected} setTabSelected={setTabSelected} />
             <SelectedTabData tabSelected={tabSelected} />
         </div>
     )

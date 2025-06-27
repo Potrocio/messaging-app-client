@@ -1,0 +1,51 @@
+import { useState } from "react"
+import styles from "./messagesTabData.module.css"
+import { useNavigate } from "react-router-dom"
+
+export default function MessagesTabData() {
+    const navigate = useNavigate();
+
+    function handleNewMessageClick() {
+        navigate('/new-message')
+    }
+
+    const [messagePreview, setMessagePreview] = useState([
+        {
+            id: 1,
+            name: "God",
+            lastMessage: "I'm proud of you",
+            lastMessageTimeStamp: new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+            })
+        },
+        {
+            id: 2,
+            name: "Imaginary",
+            lastMessage: "Hii",
+            lastMessageTimeStamp: new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+            })
+        }
+    ])
+
+    return (
+        <div className={styles.contentWrapper}>
+            <ul className={styles.listWrapper}>
+                {messagePreview.map(recipient => {
+                    return (
+                        <li key={recipient.id}>
+                            <p>{recipient.name}</p>
+                            <p>{recipient.lastMessage}</p>
+                            <p>{recipient.lastMessageTimeStamp}</p>
+                        </li>
+                    )
+                })}
+            </ul>
+            <button className={styles.newMessageButton} onClick={handleNewMessageClick}>New Message</button>
+        </div>
+    )
+}
