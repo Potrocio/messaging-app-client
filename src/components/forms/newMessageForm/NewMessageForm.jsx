@@ -28,10 +28,11 @@ export default function NewMessageForm({ friendSelected }) {
 
     function handleFormSubmit(e) {
         e.preventDefault()
-
-        // Temporarily display the recipient and the message
-        const test = friendSelected.name + ' ' + value
-        alert(test)
+        if (friendSelected) {
+            // Temporarily display the recipient and the message
+            const test = friendSelected.name + ' ' + value
+            alert(test)
+        }
     }
 
 
