@@ -49,7 +49,7 @@ const router = createBrowserRouter([
     element: <NewMessagePage />
   },
   {
-    path: "/message-preview",
+    path: "/message-preview/:id",
     element: <MessagePreviewPage />
   },
 ])

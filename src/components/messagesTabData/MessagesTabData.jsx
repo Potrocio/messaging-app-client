@@ -32,12 +32,16 @@ export default function MessagesTabData() {
         }
     ])
 
+    function handleMessagePreviewClick(recipientId) {
+        navigate(`/message-preview/${recipientId}`)
+    }
+
     return (
         <div className={styles.contentWrapper}>
             <ul className={styles.listWrapper}>
                 {messagePreview.map(recipient => {
                     return (
-                        <li key={recipient.id}>
+                        <li key={recipient.id} onClick={() => handleMessagePreviewClick(recipient.id)}>
                             <p>{recipient.name}</p>
                             <p>{recipient.lastMessage}</p>
                             <p>{recipient.lastMessageTimeStamp}</p>
