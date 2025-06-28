@@ -1,5 +1,6 @@
 import { useState } from "react"
 import styles from "./searchCurrentFriends.module.css"
+import NewMessageForm from "../forms/newMessageForm/NewMessageForm"
 
 export default function SearchCurrentFriends() {
     const [query, setQuery] = useState('')
@@ -77,6 +78,8 @@ export default function SearchCurrentFriends() {
                     })}
                 </ul>
             }
+
+            <NewMessageForm friendSelected={friendSelected} />
         </div>
     )
 }
