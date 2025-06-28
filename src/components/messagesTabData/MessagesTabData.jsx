@@ -33,7 +33,7 @@ export default function MessagesTabData() {
     ])
 
     function handleMessagePreviewClick(recipientId) {
-        navigate(`/message-preview/${recipientId}`)
+        navigate(`/conversation/${recipientId}`)
     }
 
     return (

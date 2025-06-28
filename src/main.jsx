@@ -16,7 +16,7 @@ import HomePage from './pages/HomePage'
 import SettingsPage from './pages/SettingsPage'
 import AddFriendPage from './pages/AddFriendPage'
 import NewMessagePage from './pages/NewMessagePage'
-import MessagePreviewPage from './pages/MessagePreviewPage'
+import ConversationPage from './pages/ConversationPage'
 
 
 const router = createBrowserRouter([
@@ -49,8 +49,8 @@ const router = createBrowserRouter([
     element: <NewMessagePage />
   },
   {
-    path: "/message-preview/:id",
-    element: <MessagePreviewPage />
+    path: "/conversation/:id",
+    element: <ConversationPage />
   },
 ])
 

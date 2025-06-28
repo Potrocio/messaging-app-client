@@ -3,7 +3,7 @@ import styles from "./pages.module.css"
 import { useState } from "react"
 import FriendMessages from "../components/friendMessages/FriendMessages"
 
-export default function MessagePreviewPage() {
+export default function ConversationPage() {
 
     const navigate = useNavigate()
     const { id } = useParams()
