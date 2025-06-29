@@ -13,9 +13,16 @@ export default function HomePage() {
         navigate('/settings')
     }
 
+    function handleLogOut() {
+        navigate('/')
+    }
+
     return (
         <div className={styles.homepageWrapper}>
-            <button className={styles.settings} onClick={navigateToSettings}>Settings</button>
+            <div>
+                <button className={styles.settings} onClick={navigateToSettings}>Settings</button>
+                <button onClick={handleLogOut}>Log out</button>
+            </div>
             <HomeTabSelector tabSelected={tabSelected} setTabSelected={setTabSelected} />
             <SelectedTabData tabSelected={tabSelected} />
         </div>
