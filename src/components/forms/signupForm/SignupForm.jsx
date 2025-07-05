@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 import styles from "./signupForm.module.css"
 
 // I need to modularize forms into their own components, and make the pages more modular
@@ -11,8 +10,8 @@ export default function SignupForm({ toggleAccountCreated }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState('')
 
-    const navigate = useNavigate()
 
     function handleFirstNameChange(e) {
         setFirstName(e.target.value)
@@ -30,10 +29,34 @@ export default function SignupForm({ toggleAccountCreated }) {
         setPassword(e.target.value)
     }
 
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
         e.preventDefault()
-        // navigate("/login")
-        toggleAccountCreated()
+        if (firstName.length < 3 || firstName.trim().length < 3) return setMessage("first name too short")
+        if (lastName.length < 3 || lastName.trim().length < 3) return setMessage("last name too short")
+        if (!email.includes('@') || email.length < 5) return setMessage("Invalid email type")
+        if (password === '' || password.trim().length < 3) return setMessage("Password too short")
+
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL;
+            console.log(apiUrl)
+            const res = await fetch(`${apiUrl}/api/user/signup`, {
+                mode: "cors",
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
+                    email: email.trim(),
+                    password
+                })
+            })
+            const data = await res.json();
+
+            if (!res.ok) return setMessage(data.message || "Signup failed")
+            toggleAccountCreated()
+        } catch (error) {
+            console.log("Error", error)
+        }
     }
 
     return (
@@ -43,7 +66,7 @@ export default function SignupForm({ toggleAccountCreated }) {
                 <div className={styles.firstNameWrapper}>
                     <label htmlFor="firstName">First name</label>
                     <input
-                        type="firstName"
+                        type="text"
                         id="firstName"
                         name="firstName"
                         value={firstName}
@@ -53,7 +76,7 @@ export default function SignupForm({ toggleAccountCreated }) {
                 <div className={styles.lastNameWrapper}>
                     <label htmlFor="lastName">Last name</label>
                     <input
-                        type="lastName"
+                        type="text"
                         id="lastName"
                         name="lastName"
                         value={lastName}
@@ -83,6 +106,7 @@ export default function SignupForm({ toggleAccountCreated }) {
                 <button type="submit">Create</button>
 
                 {loading && <div>Loading...</div>}
+                {message && <div>{message}</div>}
             </form>
         </div>
     )
