@@ -1,8 +1,6 @@
 import { useState } from "react"
 import styles from "./signupForm.module.css"
 
-// I need to modularize forms into their own components, and make the pages more modular
-// If accountCreated, instead of form I need to load a success message with a button to go to login
 
 export default function SignupForm({ toggleAccountCreated }) {
     const [firstName, setFirstName] = useState('')
