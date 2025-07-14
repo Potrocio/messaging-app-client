@@ -92,13 +92,41 @@ export default function SettingsPage() {
         setSubmitMessage('')
     }
 
-    function handleSubmit() {
+    async function handleSubmit() {
         if (password === confirmPassword) {
-            setSubmitMessage("Changes saved")
-            setEditEmail(false)
-            setEditFirstName(false)
-            setEditLastName(false)
-            setEditPassword(false)
+            try {
+                const token = localStorage.getItem("token")
+                const apiUrl = import.meta.env.VITE_API_URL;
+                if (token) {
+                    const res = await fetch(`${apiUrl}/api/user/settings`, {
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            firstName,
+                            lastName,
+                            email,
+                            password
+                        }),
+                        method: "PATCH"
+                    })
+                    if (!res.ok) throw new Error(res.status)
+                    const data = await res.json()
+                    if (data.updated) {
+                        setSubmitMessage("Changes saved")
+                        setEditEmail(false)
+                        setEditFirstName(false)
+                        setEditLastName(false)
+                        setEditPassword(false)
+                    }
+                } else {
+                    navigate('/login')
+                }
+            } catch (error) {
+                console.log("Error", error)
+            }
         } else {
             setPasswordsMatchMessage("Passwords must match")
         }
