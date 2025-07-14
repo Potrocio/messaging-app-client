@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
+import myContext from "../../../pages/HomePage"
 import styles from "./addFriendsForm.module.css"
 import { useNavigate } from "react-router-dom"
 
@@ -7,27 +8,15 @@ export default function AddFriendsForm() {
     const [lastName, setLastName] = useState('')
     const [searchResults, setSearchResults] = useState([])
     const [message, setMessage] = useState('')
-    const [testData, setTestData] = useState([{
-        id: 1,
-        firstName: "beginning",
-        lastName: "end",
-        email: "beginning.end@you.com",
-    }])
-    const [fakeFriendsList, setFakeFriendsList] = useState([{
-        id: 1,
-        firstName: "beginning",
-        lastName: "end",
-        email: "beginning.end@you.com",
-    }])
-    const [fakePendingList, setFakePendingList] = useState([{
-        id: 2,
-        firstName: "i",
-        lastName: "am",
-        email: "i.am@you.com",
-    }])
+
+    const { friends, conversationsPreview } = useContext(myContext)
+    const [fakeFriendsList, setFakeFriendsList] = useState([])
+    const [fakePendingList, setFakePendingList] = useState([])
 
 
     const navigate = useNavigate()
+    const apiUrl = import.meta.env.VITE_API_URL;
+
 
     function handleFirstNameChange(e) {
         setFirstName(e.target.value)
@@ -37,17 +26,36 @@ export default function AddFriendsForm() {
         setLastName(e.target.value)
     }
 
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
         e.preventDefault()
         // send get fetch request to check if name exists
         // if it exists set it to the friends Found state
         // if it does not exist leave it as it is
-        if (firstName == "beginning" && lastName == "end") {
-            setMessage('')
-            setSearchResults(testData)
-        } else {
-            setMessage(["No friends found"])
-            setSearchResults([])
+        try {
+            const token = localStorage.getItem("token")
+            if (token) {
+                const res = await fetch(`${apiUrl}/api/users?firstName=${firstName}&lastName=${lastName}`, {
+                    mode: "cors",
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                })
+                if (!res.ok) {
+                    if (res.status == 404) {
+                        setMessage("Users not found")
+                    } else {
+                        throw new Error(res.status)
+                    }
+                }
+                const data = await res.json()
+                if (data.users) {
+                    setMessage('')
+                    setSearchResults(data.users)
+                }
+            } else {
+                navigate('/login')
+            }
+        } catch (error) {
+            console.log("Error", error)
         }
     }
 
@@ -55,8 +63,35 @@ export default function AddFriendsForm() {
         navigate('/home')
     }
 
-    function handleFriendRequest() {
+    async function handleFriendRequest(friendId) {
         //send friend request
+        try {
+            const token = localStorage.getItem("token")
+            if (token) {
+                const res = await fetch(`${apiUrl}/api/friends`, {
+                    mode: "cors",
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        friendId
+                    })
+                })
+                if (!res.ok) throw new Error(res.status)
+                const data = res.json();
+                if (data.message && res.status === 201) {
+                    setMessage(data.message)
+                } else if (res.status === 409) {
+                    setMessage("Already friends")
+                }
+            } else {
+                navigate("/login")
+            }
+        } catch (error) {
+            console.log("Error", error)
+        }
     }
 
     return (
@@ -103,7 +138,7 @@ export default function AddFriendsForm() {
                                         (<div>Pending</div>)
                                         :
                                         // If personFound during search is not in pending list or friend list then next to the name of the person will be a "Request" button
-                                        (<button onClick={handleFriendRequest}>Request</button>)
+                                        (<button onClick={() => handleFriendRequest(personFound.id)}>Request</button>)
                                     )
                                 }
                             </>
