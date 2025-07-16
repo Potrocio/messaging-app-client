@@ -1,5 +1,4 @@
-import { useContext, useState } from "react"
-import myContext from "../../../pages/HomePage"
+import { useState } from "react"
 import styles from "./addFriendsForm.module.css"
 import { useNavigate } from "react-router-dom"
 
@@ -9,7 +8,6 @@ export default function AddFriendsForm() {
     const [searchResults, setSearchResults] = useState([])
     const [message, setMessage] = useState('')
 
-    const { friends, conversationsPreview } = useContext(myContext)
     const [fakeFriendsList, setFakeFriendsList] = useState([])
     const [fakePendingList, setFakePendingList] = useState([])
 
@@ -47,9 +45,9 @@ export default function AddFriendsForm() {
                     }
                 }
                 const data = await res.json()
-                if (data.users) {
+                if (data.unknownUsers) {
                     setMessage('')
-                    setSearchResults(data.users)
+                    setSearchResults(data.unknownUsers)
                 }
             } else {
                 navigate('/login')
@@ -79,12 +77,10 @@ export default function AddFriendsForm() {
                         friendId
                     })
                 })
-                if (!res.ok) throw new Error(res.status)
+                if (!res.ok && res.status !== 409) throw new Error(res.status)
                 const data = res.json();
                 if (data.message && res.status === 201) {
                     setMessage(data.message)
-                } else if (res.status === 409) {
-                    setMessage("Already friends")
                 }
             } else {
                 navigate("/login")
