@@ -48,7 +48,7 @@ export default function AddFriendsForm() {
                 if (data.unknownUsers) {
                     setMessage('')
                     setSearchResults(data.unknownUsers)
-                }
+                } else if (searchResults.length === 0) setMessage("Already friends")
             } else {
                 navigate('/login')
             }
@@ -125,18 +125,8 @@ export default function AddFriendsForm() {
                         return (
                             <>
                                 <li key={personFound.id}>{personFound.firstName + ' ' + personFound.lastName}</li>
-                                {/* If personFound during search is in friends list then next to the name of the person will be "friend" */}
-                                {fakeFriendsList.some(friends => friends.id == personFound.id) ?
-                                    (<div>Friend</div>)
-                                    :
-                                    // If personFound during search is in pending list then next to the name of the person will be "pending"
-                                    (fakePendingList.some(pending => pending.id == personFound.id) ?
-                                        (<div>Pending</div>)
-                                        :
-                                        // If personFound during search is not in pending list or friend list then next to the name of the person will be a "Request" button
-                                        (<button onClick={() => handleFriendRequest(personFound.id)}>Request</button>)
-                                    )
-                                }
+                                {/* Only people that are not yet friends or pending friends will appear in this list */}
+                                (<button onClick={() => handleFriendRequest(personFound.id)}>Request</button>)
                             </>
                         )
                     })}
