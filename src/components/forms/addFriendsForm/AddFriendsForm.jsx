@@ -48,7 +48,7 @@ export default function AddFriendsForm() {
                 if (data.unknownUsers) {
                     setMessage('')
                     setSearchResults(data.unknownUsers)
-                } else if (searchResults.length === 0) setMessage("Already friends")
+                } else if (searchResults.length === 0) setMessage("Already friends or pending")
             } else {
                 navigate('/login')
             }
