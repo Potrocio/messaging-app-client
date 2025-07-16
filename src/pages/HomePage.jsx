@@ -44,7 +44,7 @@ export default function HomePage() {
                     navigate('/login')
                 }
             } catch (error) {
-                console.log("Error", error)
+                console.log("Error fetching dashboard", error)
             }
         }
         fetchDashboard()

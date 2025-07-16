@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import styles from "./friendsTabData.module.css"
 import { useNavigate } from "react-router-dom"
 
@@ -9,22 +9,51 @@ export default function FriendsTabData() {
     const [removeFriendOn, setRemoveFriendOn] = useState(false)
     const [friendToRemove, setFriendToRemove] = useState({})
     const [showPending, setShowPending] = useState(false)
-    const [fakePendingList, setFakePendingList] = useState({
-        pendingSent: [
-            {
-                id: 1,
-                firstName: "first",
-                lastName: "person",
+    const [pendingRequested, setPendingRequested] = useState([])
+    const [pendingReceived, setPendingReceived] = useState([])
+
+    useEffect(() => {
+        async function fetchPendingList() {
+            try {
+                const token = localStorage.getItem("token")
+                if (token) {
+                    const apiUrl = import.meta.env.VITE_API_URL;
+                    const res = await fetch(`${apiUrl}/api/friends/pending`, {
+                        mode: "cors",
+                        method: "GET",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    })
+                    if (!res.ok) throw new Error(res.status)
+                    const data = await res.json()
+
+                    const friendIdRequested = data.friendsList.filter((friend) => {
+                        return friend.friendId !== friend.requestedBy
+                    }).map((friend) => { return friend.friendId })
+
+                    const friendIdReceived = data.friendsList.filter((friend) => {
+                        return friend.friendId === friend.requestedBy
+                    }).map((friend) => { return friend.friendId })
+
+                    const friendsRequested = data.friendData.filter((friend) => {
+                        return friendIdRequested.includes(friend.id)
+                    })
+
+                    const friendsReceived = data.friendData.filter((friend) => {
+                        return friendIdReceived.includes(friend.id)
+                    })
+
+                    setPendingRequested(friendsRequested)
+                    setPendingReceived(friendsReceived)
+
+                } else {
+                    navigate('/login')
+                }
+            } catch (error) {
+                console.log("Error fetching pending friend list", error)
             }
-        ],
-        pendingReceived: [
-            {
-                id: 2,
-                firstName: "second",
-                lastName: "person",
-            }
-        ]
-    })
+        }
+        fetchPendingList();
+    }, [])
 
 
     const [friends, setFriends] = useState([
@@ -106,7 +135,7 @@ export default function FriendsTabData() {
                     <div className={styles.pendingWrapper}>
                         <button onClick={handleBackClick}>Back</button>
                         <ul>
-                            {fakePendingList.pendingReceived.map(request => {
+                            {pendingReceived.map(request => {
                                 return (
                                     <>
                                         <li>{request.firstName + ' ' + request.lastName}</li>
@@ -115,7 +144,7 @@ export default function FriendsTabData() {
                                     </>
                                 )
                             })}
-                            {fakePendingList.pendingSent.map(request => {
+                            {pendingRequested.map(request => {
                                 return (
                                     <>
                                         <li>{request.firstName + ' ' + request.lastName}</li>
