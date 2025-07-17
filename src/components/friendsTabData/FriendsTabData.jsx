@@ -53,17 +53,19 @@ export default function FriendsTabData() {
             }
         }
         fetchPendingList();
-    }, [])
+    }, [showPending])
 
 
     const [friends, setFriends] = useState([
         {
             id: 1,
-            name: "God"
+            name: "God",
+            userKeyPair: "1,2"
         },
         {
             id: 2,
-            name: "Imaginary"
+            name: "Imaginary",
+            userKeyPair: "1,3"
         }
     ])
 
@@ -84,7 +86,28 @@ export default function FriendsTabData() {
         setMenuOpened(false)
     }
 
-    function handleRemoveFriend(friendObject) {
+    async function handleRemoveFriend() {
+        try {
+            const token = localStorage.getItem("token")
+            if (token) {
+                const apiUrl = import.meta.env.VITE_API_URL;
+                const res = await fetch(`${apiUrl}/api/friends/key/${friendToRemove.userKeyPair}`, {
+                    mode: "cors",
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                })
+                if (!res.ok) throw new Error(res.status)
+            } else {
+                navigate("/login")
+            }
+        } catch (error) {
+            console.log("Error deleting friend", error)
+        }
+    }
+
+    function handleSelectFriendToDelete(friendObject) {
         setFriendToRemove(friendObject)
     }
 
@@ -124,7 +147,7 @@ export default function FriendsTabData() {
                 <div className={styles.optionsWrapper}>
                     <p>Are you sure you want to remove {friendToRemove.name}?</p>
                     <div>
-                        <button>Yes</button>
+                        <button onClick={handleRemoveFriend}>Yes</button>
                         <button onClick={handleCancelFriendRemove}>No</button>
                     </div>
                 </div>
@@ -164,7 +187,7 @@ export default function FriendsTabData() {
                                     <li key={friend.id} onClick={() => handleFriendClick(friend.id)}>
                                         <p>{friend.name}</p>
                                     </li>
-                                    {removeFriendOn && <button onClick={() => handleRemoveFriend(friend)}>Remove</button>}
+                                    {removeFriendOn && <button onClick={() => handleSelectFriendToDelete(friend)}>Remove</button>}
                                 </>
                             )
                         })}

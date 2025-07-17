@@ -8,10 +8,6 @@ export default function AddFriendsForm() {
     const [searchResults, setSearchResults] = useState([])
     const [message, setMessage] = useState('')
 
-    const [fakeFriendsList, setFakeFriendsList] = useState([])
-    const [fakePendingList, setFakePendingList] = useState([])
-
-
     const navigate = useNavigate()
     const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -48,6 +44,7 @@ export default function AddFriendsForm() {
                 if (data.unknownUsers) {
                     setMessage('')
                     setSearchResults(data.unknownUsers)
+                    navigate('/home')
                 } else if (searchResults.length === 0) setMessage("Already friends or pending")
             } else {
                 navigate('/login')
