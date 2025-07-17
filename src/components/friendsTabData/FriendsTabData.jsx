@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import styles from "./friendsTabData.module.css"
 import { useNavigate } from "react-router-dom"
 import { jwtDecode } from "jwt-decode"
+import { myContext } from "../../pages/HomePage"
 
 
 export default function FriendsTabData() {
@@ -13,6 +14,9 @@ export default function FriendsTabData() {
     const [showPending, setShowPending] = useState(false)
     const [pendingRequested, setPendingRequested] = useState([])
     const [pendingReceived, setPendingReceived] = useState([])
+
+    const { friends } = useContext(myContext)
+    console.log(friends)
 
     async function fetchPendingList() {
         try {
@@ -63,20 +67,6 @@ export default function FriendsTabData() {
     useEffect(() => {
         fetchPendingList();
     }, [])
-
-
-    const [friends, setFriends] = useState([
-        {
-            id: 2,
-            name: "God",
-            userKeyPair: "1,2"
-        },
-        {
-            id: 3,
-            name: "Imaginary",
-            userKeyPair: "1,3"
-        }
-    ])
 
     function handleFriendClick(friendId) {
         navigate(`/conversation/${friendId}`)
@@ -286,7 +276,7 @@ export default function FriendsTabData() {
                             return (
                                 <>
                                     <li key={friend.id} onClick={() => handleFriendClick(friend.id)}>
-                                        <p>{friend.name}</p>
+                                        <p>{friend.firstName} {friend.lastName}</p>
                                     </li>
                                     {removeFriendOn && <button onClick={() => handleSelectFriendToDelete(friend)}>Remove</button>}
                                 </>
