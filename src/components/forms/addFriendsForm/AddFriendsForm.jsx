@@ -41,10 +41,9 @@ export default function AddFriendsForm() {
                     }
                 }
                 const data = await res.json()
-                if (data.unknownUsers) {
+                if (data.unknownUsers.length !== 0) {
                     setMessage('')
                     setSearchResults(data.unknownUsers)
-                    navigate('/home')
                 } else if (searchResults.length === 0) setMessage("Already friends or pending")
             } else {
                 navigate('/login')
@@ -74,8 +73,13 @@ export default function AddFriendsForm() {
                         friendId
                     })
                 })
-                if (!res.ok && res.status !== 409) throw new Error(res.status)
-                const data = res.json();
+                if (!res.ok && res.status !== 409) {
+                    throw new Error(res.status)
+                } else if (res.status === 409) {
+                    setMessage("Friend request already pending")
+                    return
+                }
+                const data = await res.json();
                 if (data.message && res.status === 201) {
                     setMessage(data.message)
                 }
@@ -116,6 +120,8 @@ export default function AddFriendsForm() {
                     <button onClick={handleCancelButtonClick}>Cancel</button>
                 </div>
             </form>
+            {message && <div>{message}</div>}
+
             {searchResults.length > 0 &&
                 <ul>
                     {searchResults.map(personFound => {
@@ -129,7 +135,6 @@ export default function AddFriendsForm() {
                     })}
                 </ul>
             }
-            {message && <div>{message}</div>}
         </div>
     )
 }

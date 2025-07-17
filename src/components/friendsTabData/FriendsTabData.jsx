@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import styles from "./friendsTabData.module.css"
 import { useNavigate } from "react-router-dom"
+import { jwtDecode } from "jwt-decode"
 
 
 export default function FriendsTabData() {
@@ -8,62 +9,70 @@ export default function FriendsTabData() {
     const [menuOpened, setMenuOpened] = useState(false)
     const [removeFriendOn, setRemoveFriendOn] = useState(false)
     const [friendToRemove, setFriendToRemove] = useState({})
+    const [personToReject, setPersonToReject] = useState({})
     const [showPending, setShowPending] = useState(false)
     const [pendingRequested, setPendingRequested] = useState([])
     const [pendingReceived, setPendingReceived] = useState([])
 
-    useEffect(() => {
-        async function fetchPendingList() {
-            try {
-                const token = localStorage.getItem("token")
-                if (token) {
-                    const apiUrl = import.meta.env.VITE_API_URL;
-                    const res = await fetch(`${apiUrl}/api/friends/pending`, {
-                        mode: "cors",
-                        method: "GET",
-                        headers: { "Authorization": `Bearer ${token}` }
-                    })
-                    if (!res.ok) throw new Error(res.status)
-                    const data = await res.json()
-
-                    const friendIdRequested = data.friendsList.filter((friend) => {
-                        return friend.friendId !== friend.requestedBy
-                    }).map((friend) => { return friend.friendId })
-
-                    const friendIdReceived = data.friendsList.filter((friend) => {
-                        return friend.friendId === friend.requestedBy
-                    }).map((friend) => { return friend.friendId })
-
-                    const friendsRequested = data.friendData.filter((friend) => {
-                        return friendIdRequested.includes(friend.id)
-                    })
-
-                    const friendsReceived = data.friendData.filter((friend) => {
-                        return friendIdReceived.includes(friend.id)
-                    })
-
-                    setPendingRequested(friendsRequested)
-                    setPendingReceived(friendsReceived)
-
-                } else {
-                    navigate('/login')
+    async function fetchPendingList() {
+        try {
+            const token = localStorage.getItem("token")
+            if (token) {
+                const apiUrl = import.meta.env.VITE_API_URL;
+                const res = await fetch(`${apiUrl}/api/friends/pending`, {
+                    mode: "cors",
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                })
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        setPendingReceived([])
+                        setPendingRequested([])
+                    }
+                    throw new Error(res.status)
                 }
-            } catch (error) {
-                console.log("Error fetching pending friend list", error)
+                const data = await res.json()
+
+                const friendIdRequested = data.friendsList.filter((friend) => {
+                    return friend.friendId !== friend.requestedBy
+                }).map((friend) => { return friend.friendId })
+
+                const friendIdReceived = data.friendsList.filter((friend) => {
+                    return friend.friendId === friend.requestedBy
+                }).map((friend) => { return friend.friendId })
+
+                const friendsRequested = data.friendData.filter((friend) => {
+                    return friendIdRequested.includes(friend.id)
+                })
+
+                const friendsReceived = data.friendData.filter((friend) => {
+                    return friendIdReceived.includes(friend.id)
+                })
+                console.log(friendIdReceived, friendsReceived)
+                setPendingRequested(friendsRequested)
+                setPendingReceived(friendsReceived)
+
+            } else {
+                navigate('/login')
             }
+        } catch (error) {
+            console.log("Error fetching pending friend list", error)
         }
+    }
+
+    useEffect(() => {
         fetchPendingList();
-    }, [showPending])
+    }, [])
 
 
     const [friends, setFriends] = useState([
         {
-            id: 1,
+            id: 2,
             name: "God",
             userKeyPair: "1,2"
         },
         {
-            id: 2,
+            id: 3,
             name: "Imaginary",
             userKeyPair: "1,3"
         }
@@ -86,12 +95,18 @@ export default function FriendsTabData() {
         setMenuOpened(false)
     }
 
-    async function handleRemoveFriend() {
+    async function handleRemoveFriendRequest() {
         try {
             const token = localStorage.getItem("token")
             if (token) {
+                const decoded = jwtDecode(token)
+                const userId = Number(decoded.id)
+                const userA = userId < personToReject.id ? userId : personToReject.id;
+                const userB = userId > personToReject.id ? userId : personToReject.id;
+                const userKeyPair = `${userA},${userB}`
+
                 const apiUrl = import.meta.env.VITE_API_URL;
-                const res = await fetch(`${apiUrl}/api/friends/key/${friendToRemove.userKeyPair}`, {
+                const res = await fetch(`${apiUrl}/api/friends/key/${userKeyPair}`, {
                     mode: "cors",
                     method: "DELETE",
                     headers: {
@@ -104,7 +119,51 @@ export default function FriendsTabData() {
             }
         } catch (error) {
             console.log("Error deleting friend", error)
+        } finally {
+            await fetchPendingList()
+            setPersonToReject({})
+            setShowPending(false)
         }
+    }
+
+    async function handleRemoveFriend() {
+        try {
+            const token = localStorage.getItem("token")
+            if (token) {
+                const decoded = jwtDecode(token)
+                const userId = Number(decoded.id)
+                const userA = userId < friendToRemove.id ? userId : friendToRemove.id;
+                const userB = userId > friendToRemove.id ? userId : friendToRemove.id;
+                const userKeyPair = `${userA},${userB}`
+                console.log(userKeyPair)
+
+                const apiUrl = import.meta.env.VITE_API_URL;
+                const res = await fetch(`${apiUrl}/api/friends/key/${userKeyPair}`, {
+                    mode: "cors",
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                })
+                if (!res.ok) throw new Error(res.status)
+            } else {
+                navigate("/login")
+            }
+        } catch (error) {
+            console.log("Error deleting friend", error)
+        } finally {
+            await fetchPendingList()
+            setFriendToRemove({})
+            setRemoveFriendOn(false)
+        }
+    }
+
+    function handleSelectPersonToReject(personObject) {
+        setPersonToReject(personObject)
+    }
+
+    function handleCancelPersonToReject() {
+        setPersonToReject({})
     }
 
     function handleSelectFriendToDelete(friendObject) {
@@ -127,6 +186,38 @@ export default function FriendsTabData() {
 
     function handleBackClick() {
         setShowPending(false)
+    }
+
+    async function handleAcceptFriendRequest(personObject) {
+        try {
+            const token = localStorage.getItem("token")
+            if (token) {
+                const decoded = jwtDecode(token)
+                const userId = Number(decoded.id)
+                const userA = userId < personObject.id ? userId : personObject.id;
+                const userB = userId > personObject.id ? userId : personObject.id;
+                const userKeyPair = `${userA},${userB}`
+                console.log(userKeyPair)
+
+                const apiUrl = import.meta.env.VITE_API_URL;
+                const res = await fetch(`${apiUrl}/api/friends`, {
+                    mode: "cors",
+                    method: "PATCH",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ userKeyPair })
+                })
+                if (!res.ok) throw new Error(res.status)
+            } else {
+                navigate("/login")
+            }
+        } catch (error) {
+            console.log("Error accepting friend request", error)
+        } finally {
+            await fetchPendingList()
+        }
     }
 
     return (
@@ -152,25 +243,35 @@ export default function FriendsTabData() {
                     </div>
                 </div>
             }
+            {personToReject.name && <div className={styles.backdrop}></div>}
+            {personToReject.id &&
+                <div className={styles.optionsWrapper}>
+                    <p>Are you sure you want to reject? {personToReject.name}?</p>
+                    <div>
+                        <button onClick={handleRemoveFriendRequest}>Yes</button>
+                        <button onClick={handleCancelPersonToReject}>No</button>
+                    </div>
+                </div>
+            }
 
             {showPending ?
                 (
                     <div className={styles.pendingWrapper}>
                         <button onClick={handleBackClick}>Back</button>
                         <ul>
-                            {pendingReceived.map(request => {
+                            {pendingReceived.map(person => {
                                 return (
                                     <>
-                                        <li>{request.firstName + ' ' + request.lastName}</li>
-                                        <button>Accept</button>
-                                        <button>Reject</button>
+                                        <li>{person.firstName + ' ' + person.lastName}</li>
+                                        <button onClick={() => handleAcceptFriendRequest(person)}>Accept</button>
+                                        <button onClick={() => handleSelectPersonToReject(person)}>Reject</button>
                                     </>
                                 )
                             })}
-                            {pendingRequested.map(request => {
+                            {pendingRequested.map(person => {
                                 return (
                                     <>
-                                        <li>{request.firstName + ' ' + request.lastName}</li>
+                                        <li>{person.firstName + ' ' + person.lastName}</li>
                                         <div>Pending</div>
                                     </>
                                 )
