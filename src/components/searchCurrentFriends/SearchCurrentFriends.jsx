@@ -1,11 +1,52 @@
-import { useState } from "react"
 import styles from "./searchCurrentFriends.module.css"
 import NewMessageForm from "../forms/newMessageForm/NewMessageForm"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+
 
 export default function SearchCurrentFriends() {
+    const navigate = useNavigate()
     const [query, setQuery] = useState('')
     const [showFriendList, setShowFriendList] = useState(false)
     const [friendSelected, setFriendSelected] = useState('')
+    const [friends, setFriends] = useState([])
+
+    useEffect(() => {
+        try {
+            async function fetchFriends() {
+                const token = localStorage.getItem("token")
+                if (token) {
+                    const apiUrl = import.meta.env.VITE_API_URL;
+                    const res = await fetch(`${apiUrl}/api/friends`, {
+                        mode: "cors",
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    })
+
+                    if (!res.ok) {
+                        if (res.status === 403) {
+                            navigate('/login')
+                            return
+                        }
+                        throw new Error(res.status)
+                    }
+                    const data = await res.json();
+                    console.log("friends", data.friends)
+                    setFriends(data.friends)
+
+                } else {
+                    navigate('/login')
+                }
+
+            }
+            fetchFriends()
+        } catch (error) {
+            console.log("Error fetching friends for new message", error)
+        }
+    }, [])
+
 
     function handleQueryChange(e) {
         setQuery(e.target.value)
@@ -27,24 +68,14 @@ export default function SearchCurrentFriends() {
     }
 
     function changeFriendSelected() {
-        setQuery(friendSelected.name)
+        setQuery(friendSelected.firstName + ' ' + friendSelected.lastName)
         setFriendSelected('')
         setShowFriendList(true)
     }
 
-    const [friends, setFriends] = useState([
-        {
-            id: 1,
-            name: "God"
-        },
-        {
-            id: 2,
-            name: "Imaginary"
-        }
-    ])
-
     const filteredFriends = friends.filter(friend => {
-        return (friend.name.toLowerCase().startsWith(query.toLowerCase()))
+        const name = friend.firstName + ' ' + friend.lastName;
+        return (name.toLowerCase().startsWith(query.toLowerCase()))
     })
 
     return (
@@ -52,7 +83,7 @@ export default function SearchCurrentFriends() {
             {friendSelected ?
                 (<div>
                     <button onClick={changeFriendSelected}>
-                        {friendSelected.name}
+                        {friendSelected.firstName + ' ' + friendSelected.lastName}
                     </button>
                 </div>)
                 :
@@ -73,7 +104,7 @@ export default function SearchCurrentFriends() {
                     <div className={styles.exitFriendsList} onClick={closeFriendsList}>X</div>
                     {filteredFriends.map(friend => {
                         return (
-                            <li key={friend.id} onClick={() => handleClick(friend)}>{friend.name}</li>
+                            <li key={friend.id} onClick={() => handleClick(friend)}>{friend.firstName + ' ' + friend.lastName}</li>
                         )
                     })}
                 </ul>

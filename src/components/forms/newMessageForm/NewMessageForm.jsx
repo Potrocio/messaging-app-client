@@ -3,7 +3,7 @@ import styles from "./newMessageForm.module.css"
 import { useState } from "react"
 
 export default function NewMessageForm({ friendSelected }) {
-    const [value, setValue] = useState('')
+    const [message, setMessage] = useState('')
     const textareaRef = useRef(null)
 
     function handleInput(e) {
@@ -23,14 +23,14 @@ export default function NewMessageForm({ friendSelected }) {
             textarea.style.height = `${scrollHeight}px`
             textarea.style.overflowY = 'hidden'
         }
-        setValue(e.target.value)
+        setMessage(e.target.value)
     }
 
     function handleFormSubmit(e) {
         e.preventDefault()
         if (friendSelected) {
             // Temporarily display the recipient and the message
-            const test = friendSelected.name + ' ' + value
+            const test = friendSelected.name + ' ' + message
             alert(test)
         }
     }
@@ -44,7 +44,7 @@ export default function NewMessageForm({ friendSelected }) {
                     id="message"
                     rows="1"
                     ref={textareaRef}
-                    value={value}
+                    value={message}
                     onInput={handleInput}
                 ></textarea>
                 <button className={styles.sendMessageButton} type="submit">Send</button>
