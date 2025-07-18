@@ -1,6 +1,7 @@
 import { useRef } from "react"
 import styles from "./newMessageForm.module.css"
 import { useState } from "react"
+import { jwtDecode } from "jwt-decode"
 
 export default function NewMessageForm({ friendSelected }) {
     const [message, setMessage] = useState('')
@@ -26,12 +27,36 @@ export default function NewMessageForm({ friendSelected }) {
         setMessage(e.target.value)
     }
 
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
         e.preventDefault()
+        // It would be nice if I can send a message instance, and redirect to that conversation instance
         if (friendSelected) {
-            // Temporarily display the recipient and the message
-            const test = friendSelected.name + ' ' + message
-            alert(test)
+            try {
+                const token = localStorage.getItem("token")
+                if (token) {
+                    const apiUrl = import.meta.env.VITE_API_URL;
+                    const decoded = jwtDecode(token)
+                    const userId = Number(decoded.id)
+                    const userA = userId < friendSelected.id ? userId : friendSelected.id;
+                    const userB = userId > friendSelected.id ? userId : friendSelected.id;
+                    const userKeyPair = `${userA},${userB}`
+                    const content = message;
+
+                    const res = await fetch(`${apiUrl}/api/conversations/`, {
+                        mode: "cors",
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ userKeyPair, content })
+                    })
+                    console.log(res.status)
+                    if (!res.ok) throw new Error(res.status)
+                }
+            } catch (error) {
+                console.log("Error sending new message", error)
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import { myContext } from "../../pages/HomePage"
 export default function MessagesTabData() {
     const navigate = useNavigate();
     const { conversationsPreview } = useContext(myContext)
+    // const conversationsPreview = [{ messages: ["hello"] }]
     console.log(conversationsPreview)
 
     function handleNewMessageClick() {
@@ -35,6 +36,7 @@ export default function MessagesTabData() {
     //     }
     // ])
 
+
     function handleMessagePreviewClick(recipientId) {
         navigate(`/conversation/${recipientId}`)
     }
@@ -43,11 +45,20 @@ export default function MessagesTabData() {
         <div className={styles.contentWrapper}>
             <ul className={styles.listWrapper}>
                 {conversationsPreview.map(recipient => {
+                    const words = recipient.messages[0].content.split(" ")
+                    const messagePreview = words.length <= 15 ? recipient.messages[0].content : words.slice(0, 15).join(" ") + " ..."
+                    const isoTime = recipient.messages[0].createdAt
+                    const date = new Date(isoTime)
+                    const hours = date.getHours();
+                    const minutes = date.getMinutes();
+                    const twelveHour = hours % 12 || 12; // 0 becomes 12
+                    const amPm = hours >= 12 ? "PM" : "AM";
+
                     return (
                         <li key={recipient.id} onClick={() => handleMessagePreviewClick(recipient.id)}>
-                            <p>{recipient.name}</p>
-                            <p>{recipient.lastMessage}</p>
-                            <p>{recipient.lastMessageTimeStamp}</p>
+                            <p>{recipient.messages[0].receiverFirstName}</p>
+                            <p>{messagePreview}</p>
+                            <p>{`${twelveHour}:${minutes} ${amPm}`}</p>
                         </li>
                     )
                 })}

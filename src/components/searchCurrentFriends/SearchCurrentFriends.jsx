@@ -33,7 +33,6 @@ export default function SearchCurrentFriends() {
                         throw new Error(res.status)
                     }
                     const data = await res.json();
-                    console.log("friends", data.friends)
                     setFriends(data.friends)
 
                 } else {
