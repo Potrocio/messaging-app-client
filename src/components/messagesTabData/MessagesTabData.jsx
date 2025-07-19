@@ -7,7 +7,6 @@ export default function MessagesTabData() {
     const navigate = useNavigate();
     const { conversationsPreview } = useContext(myContext)
     // const conversationsPreview = [{ messages: ["hello"] }]
-    console.log(conversationsPreview)
 
     function handleNewMessageClick() {
         navigate('/new-message')
@@ -37,28 +36,35 @@ export default function MessagesTabData() {
     // ])
 
 
-    function handleMessagePreviewClick(recipientId) {
-        navigate(`/conversation/${recipientId}`)
+    function handleMessagePreviewClick(conversationId) {
+        navigate(`/conversation/${conversationId}`)
     }
 
     return (
         <div className={styles.contentWrapper}>
             <ul className={styles.listWrapper}>
-                {conversationsPreview.map(recipient => {
-                    const words = recipient.messages[0].content.split(" ")
-                    const messagePreview = words.length <= 15 ? recipient.messages[0].content : words.slice(0, 15).join(" ") + " ..."
-                    const isoTime = recipient.messages[0].createdAt
-                    const date = new Date(isoTime)
+                {conversationsPreview.map(conversation => {
+                    const words = conversation.messages[0].content.split(" ")
+                    const messagePreview = words.length <= 15 ? conversation.messages[0].content : words.slice(0, 15).join(" ") + " ..."
+                    const isoTime = conversation.messages[0].createdAt;
+                    const date = new Date(isoTime);
                     const hours = date.getHours();
                     const minutes = date.getMinutes();
-                    const twelveHour = hours % 12 || 12; // 0 becomes 12
+
+                    const twelveHour = hours % 12 || 12; // Convert 0 to 12 for 12-hour clock
                     const amPm = hours >= 12 ? "PM" : "AM";
 
+                    // Add leading zero if needed
+                    const paddedHour = twelveHour.toString().padStart(2, '0');
+                    const paddedMinutes = minutes.toString().padStart(2, '0');
+
+                    const formattedTime = `${paddedHour}:${paddedMinutes} ${amPm}`;
+
                     return (
-                        <li key={recipient.id} onClick={() => handleMessagePreviewClick(recipient.id)}>
-                            <p>{recipient.messages[0].receiverFirstName}</p>
+                        <li key={conversation.id} onClick={() => handleMessagePreviewClick(conversation.id)}>
+                            <p>{conversation.messages[0].receiverFirstName}</p>
                             <p>{messagePreview}</p>
-                            <p>{`${twelveHour}:${minutes} ${amPm}`}</p>
+                            <p>{formattedTime}</p>
                         </li>
                     )
                 })}

@@ -1,61 +1,43 @@
-import { useState } from "react"
 import styles from "./friendMessages.module.css"
 import NewMessageForm from "../forms/newMessageForm/NewMessageForm"
+import { jwtDecode } from "jwt-decode"
+import { useNavigate } from "react-router-dom"
+import { useState } from "react";
 
-export default function FriendMessages({ friendSelected }) {
-    const [user, setUser] = useState('John')
-    const [messages, setMessages] = useState([
-        {
-            recipient: "God",
-            message: "Hi",
-            timeStamp: new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            })
-        },
-        {
-            recipient: "John",
-            message: "Hello",
-            timeStamp: new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            })
-        },
-        {
-            recipient: "God",
-            message: "I love you",
-            timeStamp: new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            })
-        },
-        {
-            recipient: "John",
-            message: "Thank you",
-            timeStamp: new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            })
-        },
-    ])
+export default function FriendMessages({ friendSelected, conversation }) {
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token")
+    const decode = jwtDecode(token)
+    if (!token) {
+        navigate('/login')
+    }
+    const userId = Number(decode.id)
+
     return (
         <div className={styles.contentWrapper}>
-            {/* <div className={styles.messagesWrapper}> */}
             <ul className={styles.messagesWrapper}>
-                {messages.map(message => {
+                {conversation.messages.map(message => {
+                    const isoTime = message.createdAt;
+                    const date = new Date(isoTime);
+                    const hours = date.getHours();
+                    const minutes = date.getMinutes();
+
+                    const twelveHour = hours % 12 || 12; // Convert 0 to 12 for 12-hour clock
+                    const amPm = hours >= 12 ? "PM" : "AM";
+
+                    // Add leading zero if needed
+                    const paddedHour = twelveHour.toString().padStart(2, '0');
+                    const paddedMinutes = minutes.toString().padStart(2, '0');
+
+                    const formattedTime = `${paddedHour}:${paddedMinutes} ${amPm}`;
                     return (
-                        <li className={`${message.recipient == user ? styles.userMessageContainer : styles.recipientMessageContainer}`}>
-                            <p>{message.message}</p>
-                            <p>{message.timeStamp}</p>
+                        <li className={`${message.senderId == userId ? styles.userMessageContainer : styles.recipientMessageContainer}`}>
+                            <p>{message.content}</p>
+                            <p>{formattedTime}</p>
                         </li>
                     )
                 })}
             </ul>
-            {/* </div> */}
             <NewMessageForm friendSelected={friendSelected} />
         </div>
     )

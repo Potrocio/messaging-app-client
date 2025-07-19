@@ -109,7 +109,7 @@ export default function SearchCurrentFriends() {
                 </ul>
             }
 
-            <NewMessageForm friendSelected={friendSelected} />
+            <NewMessageForm friendSelected={friendSelected} redirectToConversation={true} />
         </div>
     )
 }

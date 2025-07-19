@@ -57,7 +57,6 @@ export default function LoginForm() {
             const data = await res.json();
             // if user is authenticated store the token in local storage and redirect to their homepage
             if (data.token) {
-                console.log("data.token", data.token)
                 localStorage.setItem("token", data.token)
                 setMessage('')
                 navigate("/home")

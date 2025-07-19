@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom"
 import styles from "./pages.module.css"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import FriendMessages from "../components/friendMessages/FriendMessages"
+import { jwtDecode } from "jwt-decode"
 
 export default function ConversationPage() {
 
@@ -11,38 +12,86 @@ export default function ConversationPage() {
     function handleHomeButtonClick() {
         navigate('/home')
     }
-    const [messagePreview, setMessagePreview] = useState([
-        {
-            id: 1,
-            name: "God",
-            lastMessage: "I'm proud of you",
-            lastMessageTimeStamp: new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            })
-        },
-        {
-            id: 2,
-            name: "Imaginary",
-            lastMessage: "I think therefore I am",
-            lastMessageTimeStamp: new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            })
-        }
-    ])
+    const [conversation, setConversation] = useState({})
+    const [friend, setFriend] = useState({})
 
-    const friendSelected = messagePreview.find(friend => {
-        return friend.id == id
-    })
+    useEffect(() => {
+        async function fetchConversation() {
+            try {
+                const token = localStorage.getItem("token")
+                if (token) {
+                    const apiUrl = import.meta.env.VITE_API_URL;
+                    const res = await fetch(`${apiUrl}/api/conversations/${id}`, {
+                        mode: "cors",
+                        method: "GET",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    })
+                    if (!res.ok) {
+                        if (res.status === 403) {
+                            navigate('/login')
+                            return
+                        }
+                        throw new Error(res.status)
+                    }
+                    const data = await res.json()
+                    setConversation(data.conversation)
+                }
+            } catch (error) {
+                console.log("Error fetching conversation", error)
+            }
+        }
+        fetchConversation()
+    }, [])
+
+    useEffect(() => {
+        async function fetchFriend() {
+
+            try {
+                if (conversation.length === 0) return
+                const token = localStorage.getItem("token")
+                if (token) {
+                    const decoded = jwtDecode(token)
+                    const userId = Number(decoded.id)
+                    const userA = conversation.userA;
+                    const userB = conversation.userB;
+                    const friendId = userId === userA ? userB : userA;
+
+                    if (!friendId) throw new Error("Friend id not defined")
+
+                    const apiUrl = import.meta.env.VITE_API_URL;
+                    const res = await fetch(`${apiUrl}/api/user/${friendId}`, {
+                        mode: "cors",
+                        method: "GET",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    })
+                    if (!res.ok) {
+                        if (res.status === 403) {
+                            navigate('/login')
+                            return
+                        }
+                        throw new Error(res.status)
+                    }
+                    const data = await res.json()
+                    setFriend(data.friend)
+                }
+            } catch (error) {
+                console.log("Error fetching friend", error)
+            }
+        }
+        fetchFriend()
+    }, [conversation])
 
     return (
-        <div className={styles.contentWrapper}>
-            <button className={styles.homeButton} onClick={handleHomeButtonClick}>Home</button>
-            <p>{friendSelected.name}</p>
-            <FriendMessages friendSelected={friendSelected} />
-        </div>
+        <>
+            {Object.keys(conversation).length === 0 || Object.keys(friend).length === 0
+                ? <div>Loading...</div>
+                :
+                < div className={styles.contentWrapper} >
+                    <button className={styles.homeButton} onClick={handleHomeButtonClick}>Home</button>
+                    <p>{friend.firstName}</p>
+                    <FriendMessages friendSelected={friend} conversation={conversation} />
+                </div >
+            }
+        </>
     )
 }

@@ -15,8 +15,7 @@ export default function FriendsTabData() {
     const [pendingRequested, setPendingRequested] = useState([])
     const [pendingReceived, setPendingReceived] = useState([])
 
-    const { friends } = useContext(myContext)
-    console.log(friends)
+    const { friends, conversationsPreview } = useContext(myContext)
 
     async function fetchPendingList() {
         try {
@@ -52,7 +51,6 @@ export default function FriendsTabData() {
                 const friendsReceived = data.friendData.filter((friend) => {
                     return friendIdReceived.includes(friend.id)
                 })
-                console.log(friendIdReceived, friendsReceived)
                 setPendingRequested(friendsRequested)
                 setPendingReceived(friendsReceived)
 
@@ -69,7 +67,22 @@ export default function FriendsTabData() {
     }, [])
 
     function handleFriendClick(friendId) {
-        navigate(`/conversation/${friendId}`)
+        const token = localStorage.getItem("token")
+        if (token) {
+            const decoded = jwtDecode(token)
+            const userId = Number(decoded.id)
+            const userA = userId < friendId ? userId : friendId;
+            const userB = userId > friendId ? userId : friendId;
+            const userKeyPair = `${userA},${userB}`
+            const conversation = conversationsPreview.filter((conversation) => {
+                return conversation.userKeyPair === userKeyPair;
+            })
+            // console.log(conversation[0])
+            navigate(`/conversation/${conversation[0].id}`)
+        } else {
+            navigate('/login')
+        }
+
     }
 
     function handleShowOptions() {
@@ -125,7 +138,6 @@ export default function FriendsTabData() {
                 const userA = userId < friendToRemove.id ? userId : friendToRemove.id;
                 const userB = userId > friendToRemove.id ? userId : friendToRemove.id;
                 const userKeyPair = `${userA},${userB}`
-                console.log(userKeyPair)
 
                 const apiUrl = import.meta.env.VITE_API_URL;
                 const res = await fetch(`${apiUrl}/api/friends/key/${userKeyPair}`, {
@@ -187,7 +199,6 @@ export default function FriendsTabData() {
                 const userA = userId < personObject.id ? userId : personObject.id;
                 const userB = userId > personObject.id ? userId : personObject.id;
                 const userKeyPair = `${userA},${userB}`
-                console.log(userKeyPair)
 
                 const apiUrl = import.meta.env.VITE_API_URL;
                 const res = await fetch(`${apiUrl}/api/friends`, {
@@ -252,7 +263,7 @@ export default function FriendsTabData() {
                             {pendingReceived.map(person => {
                                 return (
                                     <>
-                                        <li>{person.firstName + ' ' + person.lastName}</li>
+                                        <li key={person.id}>{person.firstName + ' ' + person.lastName}</li>
                                         <button onClick={() => handleAcceptFriendRequest(person)}>Accept</button>
                                         <button onClick={() => handleSelectPersonToReject(person)}>Reject</button>
                                     </>
@@ -261,7 +272,7 @@ export default function FriendsTabData() {
                             {pendingRequested.map(person => {
                                 return (
                                     <>
-                                        <li>{person.firstName + ' ' + person.lastName}</li>
+                                        <li key={person.id}>{person.firstName + ' ' + person.lastName}</li>
                                         <div>Pending</div>
                                     </>
                                 )

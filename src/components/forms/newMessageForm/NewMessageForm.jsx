@@ -2,10 +2,12 @@ import { useRef } from "react"
 import styles from "./newMessageForm.module.css"
 import { useState } from "react"
 import { jwtDecode } from "jwt-decode"
+import { useNavigate } from "react-router-dom"
 
-export default function NewMessageForm({ friendSelected }) {
+export default function NewMessageForm({ friendSelected, redirectToConversation }) {
     const [message, setMessage] = useState('')
     const textareaRef = useRef(null)
+    const navigate = useNavigate();
 
     function handleInput(e) {
         const textarea = textareaRef.current;
@@ -51,8 +53,11 @@ export default function NewMessageForm({ friendSelected }) {
                         },
                         body: JSON.stringify({ userKeyPair, content })
                     })
-                    console.log(res.status)
                     if (!res.ok) throw new Error(res.status)
+                    const data = await res.json()
+                    if (redirectToConversation) {
+                        navigate(`/conversation/${data.conversation.id}`)
+                    }
                 }
             } catch (error) {
                 console.log("Error sending new message", error)
