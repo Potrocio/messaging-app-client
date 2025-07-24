@@ -42,6 +42,7 @@ export default function MessagesTabData() {
 
     return (
         <div className={styles.contentWrapper}>
+            <button className={styles.newMessageButton} onClick={handleNewMessageClick}>New Message</button>
             <ul className={styles.listWrapper}>
                 {conversationsPreview.map(conversation => {
                     const words = conversation.messages[0].content.split(" ")
@@ -69,7 +70,6 @@ export default function MessagesTabData() {
                     )
                 })}
             </ul>
-            <button className={styles.newMessageButton} onClick={handleNewMessageClick}>New Message</button>
         </div>
     )
 }
